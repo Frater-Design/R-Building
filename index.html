@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Facade Lighting Proposal — R Building by Times Development</title>
+
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#121826;
+      --text:#e8eef7;
+      --muted:#9bb0c9;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, #172034 0%, var(--bg) 55%);
+      color:var(--text);
+      padding:24px;
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      display:grid;
+      gap:14px;
+    }
+
+    /* HEADER */
+    .header{
+      background: rgba(18,24,38,.86);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .headerTop{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+
+    .title h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.2px;
+    }
+
+    .title .sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13.5px;
+    }
+
+    .brand{
+      text-align:right;
+      min-width:240px;
+    }
+
+    .brand .name{
+      margin:0;
+      font-weight:700;
+      font-size:16px;
+    }
+
+    .brand .meta{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+      white-space:pre-line;
+    }
+
+    /* PANELS */
+    .panel{
+      background: rgba(18,24,38,.86);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* VIEWPORT */
+    .stageTitle{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:10px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    .stageTitle h2{
+      margin:0;
+      font-size:15px;
+      font-weight:650;
+    }
+
+    .stageTitle .hint{
+      margin:0;
+      color:var(--muted);
+      font-size:12.5px;
+    }
+
+    .viewport{
+      position:relative;
+      width:100%;
+      aspect-ratio:16/9;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0a0f1a;
+    }
+
+    .layer{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      object-position:center;
+      pointer-events:none;
+    }
+
+    #bg{z-index:0;}
+    #crown{z-index:2;}
+    #wall{z-index:3;}
+
+    .foot{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    /* ===== Viewport + Controls Side Layout ===== */
+    .viewportLayout{
+      display:grid;
+      grid-template-columns: 2.1fr 0.9fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .controlsPanel{
+      background: rgba(18,24,38,.86);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding:14px 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    /* OPTION ROWS */
+    .optionBlock{
+      padding:10px 0;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .optionBlock:first-child{ border-top:none; }
+
+    .label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:10px;
+    }
+
+    .line2{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .btnGroup{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button.opt{
+      border:1px solid var(--border);
+      background:#0e1524;
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-size:14px;
+      min-width:74px;
+      transition: transform .05s ease, filter .15s ease, box-shadow .15s ease, border-color .15s ease;
+      white-space:nowrap;
+    }
+    button.opt:hover{ filter:brightness(1.1); }
+    button.opt:active{ transform:translateY(1px); }
+    button.opt.active{
+      border-color: rgba(120,170,255,.75);
+      box-shadow: 0 0 0 3px rgba(120,170,255,.18);
+    }
+
+    .toolBtn{
+      border:1px solid var(--border);
+      background:#0e1524;
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-size:14px;
+      transition: filter .15s ease, transform .05s ease;
+      white-space:nowrap;
+    }
+    .toolBtn:hover{ filter:brightness(1.1); }
+    .toolBtn:active{ transform:translateY(1px); }
+
+    .actionsRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width: 980px){
+      .viewportLayout{ grid-template-columns: 1fr; }
+      .brand{ text-align:left; }
+    }
+
+    /* FIXTURES GRID */
+    .fixturesHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:10px;
+      margin:6px 0 12px;
+      flex-wrap:wrap;
+    }
+    .fixturesHeader h3{
+      margin:0;
+      font-size:15px;
+      font-weight:650;
+    }
+    .fixturesHeader .small{
+      margin:0;
+      color:var(--muted);
+      font-size:12.5px;
+    }
+
+    .fixturesGrid{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap:12px;
+    }
+
+    .fixtureCard{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(14,21,36,.75);
+      border-radius:14px;
+      overflow:hidden;
+      transition: transform .12s ease, filter .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+    .fixtureCard:hover{
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+      border-color: rgba(120,170,255,.45);
+      box-shadow: 0 10px 22px rgba(0,0,0,.28);
+    }
+    .fixtureThumb{
+      width:100%;
+      aspect-ratio: 4 / 3;
+      background:#0a0f1a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .fixtureThumb img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      object-position:center;
+      display:block;
+    }
+    .fixtureBody{
+      padding:10px 12px 12px;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .fixtureTitle{
+      margin:0;
+      font-size:13.5px;
+      font-weight:700;
+      line-height:1.2;
+    }
+    .fixtureMeta{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.25;
+    }
+    .chip{
+      font-size:11px;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(232,238,247,.9);
+      white-space:nowrap;
+      height: fit-content;
+    }
+
+    @media (max-width: 1100px){
+      .fixturesGrid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 980px){
+      .fixturesGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width:720px){
+      .fixturesGrid{ grid-template-columns: 1fr; }
+    }
+
+    /* =========================
+       PRINT / EXPORT (2 pages)
+       ========================= */
+    .printOnly{ display:none; }
+
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    @media print{
+      body{
+        background:#fff !important;
+        color:#111 !important;
+        padding:0 !important;
+      }
+
+      .noPrint{ display:none !important; }
+      .printOnly{ display:block !important; }
+
+      .wrap{ max-width:none; gap:0; }
+
+      .panel, .header, .controlsPanel{
+        background:#fff !important;
+        color:#111 !important;
+        border:1px solid #ddd !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        border-radius:0 !important;
+        padding:0 !important;
+        margin:0 !important;
+      }
+
+      .reportPage{
+        page-break-after: always;
+        padding: 0;
+      }
+      .reportPage:last-child{ page-break-after: auto; }
+
+      .reportHeader{
+        display:flex;
+        justify-content:space-between;
+        gap:16px;
+        align-items:flex-start;
+        border-bottom:1px solid #ddd;
+        padding: 10mm 0 6mm;
+        margin-bottom: 6mm;
+      }
+
+      .reportHeader h1{
+        font-size:16pt;
+        margin:0 0 2mm;
+      }
+      .reportHeader .small{
+        font-size:10pt;
+        color:#444;
+        margin:0;
+        line-height:1.35;
+        white-space:pre-line;
+      }
+
+      .reportMetaGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:4mm 10mm;
+        margin: 0 0 6mm;
+        font-size:10.5pt;
+      }
+      .metaItem{
+        border:1px solid #e5e5e5;
+        padding:3mm 4mm;
+      }
+      .metaLabel{
+        font-size:9pt;
+        color:#666;
+        margin:0 0 1.5mm;
+      }
+      .metaValue{
+        margin:0;
+        font-weight:600;
+      }
+
+      .reportViewportBlock{
+        border:1px solid #ddd;
+        padding:4mm;
+      }
+
+      .viewport{
+        border:1px solid #ccc !important;
+        border-radius:0 !important;
+        background:#fff !important;
+      }
+
+      .reportNote{
+        margin-top:4mm;
+        font-size:9.5pt;
+        color:#444;
+        line-height:1.4;
+      }
+
+      .reportSectionTitle{
+        font-size:12pt;
+        margin:0 0 4mm;
+      }
+
+      .productTable{
+        width:100%;
+        border-collapse:collapse;
+        font-size:10.5pt;
+      }
+      .productTable th, .productTable td{
+        border:1px solid #ddd;
+        padding:3mm;
+        text-align:left;
+        vertical-align:top;
+      }
+      .productTable th{
+        background:#f6f6f6;
+        font-weight:700;
+      }
+
+      .prodImg{
+        width:26mm;
+        height:20mm;
+        border:1px solid #ddd;
+        object-fit:contain;
+        background:#fff;
+        display:block;
+      }
+
+      .reportFooter{
+        border-top:1px solid #ddd;
+        margin-top:6mm;
+        padding-top:3mm;
+        font-size:9pt;
+        color:#555;
+        display:flex;
+        justify-content:space-between;
+        gap:10mm;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- HEADER (screen) -->
+  <div class="header noPrint">
+    <div class="headerTop">
+      <div class="title">
+        <h1>Facade Light Proposal</h1>
+        <div class="sub">Project: <strong>R Building by Times Development</strong></div>
+      </div>
+
+      <div class="brand">
+        <div class="name">FRATER</div>
+        <div class="meta">Facade Lighting Design
+Dubai, UAE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEWPORT + CONTROLS (side-by-side) -->
+  <div class="viewportLayout noPrint">
+
+    <!-- LEFT: VIEWPORT -->
+    <div class="panel">
+      <div class="stageTitle">
+        <h2>Viewport</h2>
+        <p class="hint">Background fixed: <strong>B01.png</strong></p>
+      </div>
+
+      <div class="viewport">
+        <img id="bg" class="layer" src="B01.png" alt="Background" />
+        <img id="crown" class="layer" alt="Crown Overlay" />
+        <img id="wall" class="layer" alt="Wall Overlay" />
+      </div>
+
+      <div class="foot">
+        Select Crown / Wall effects from the right panel to preview instantly.
+      </div>
+    </div>
+
+    <!-- RIGHT: CONTROLS -->
+    <div class="controlsPanel">
+
+      <div class="optionBlock">
+        <div class="label">Crown Light Effect</div>
+        <div class="line2">
+          <div class="btnGroup" id="crownButtons">
+            <button class="opt" data-layer="crown" data-src="C01.png" data-option="1">Option 01</button>
+            <button class="opt" data-layer="crown" data-src="C02.png" data-option="2">Option 02</button>
+            <button class="opt" data-layer="crown" data-src="C03.png" data-option="3">Option 03</button>
+          </div>
+          <button class="toolBtn" id="clearCrown">Clear</button>
+        </div>
+      </div>
+
+      <div class="optionBlock">
+        <div class="label">Wall Light Effect</div>
+        <div class="line2">
+          <div class="btnGroup" id="wallButtons">
+            <button class="opt" data-layer="wall" data-src="W01.png" data-option="1">Option 01</button>
+            <button class="opt" data-layer="wall" data-src="W02.png" data-option="2">Option 02</button>
+            <button class="opt" data-layer="wall" data-src="W03.png" data-option="3">Option 03</button>
+          </div>
+          <button class="toolBtn" id="clearWall">Clear</button>
+        </div>
+      </div>
+
+      <div class="optionBlock">
+        <div class="label">Actions</div>
+        <div class="actionsRow">
+          <button class="toolBtn" id="resetAll">Reset All</button>
+          <button class="toolBtn" id="exportPdf">Export Report (PDF)</button>
+        </div>
+        <div class="foot" style="margin-top:10px;">
+          Export will create a 2-page A4 report:
+          <br/>Page 1: Selected view
+          <br/>Page 2: Proposed fixtures (filtered)
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PROPOSED FIXTURES (screen) -->
+  <div class="panel noPrint">
+    <div class="fixturesHeader">
+      <h3>Proposed Fixtures (FRATER)</h3>
+      <p class="small">Click a fixture to open the product page in a new tab.</p>
+    </div>
+
+    <div class="fixturesGrid">
+      <a class="fixtureCard" href="https://www.fraterlighting.com/nftb" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F01.png" alt="Neon Flex (F01)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">01 — Neon Flex</p>
+            <div class="fixtureMeta">Model: NFTB</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+
+      <a class="fixtureCard" href="https://www.fraterlighting.com/ig04" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F02.png" alt="Uplight (F02)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">02 — Uplight</p>
+            <div class="fixtureMeta">Model: IG04</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+
+      <a class="fixtureCard" href="https://www.fraterlighting.com/wl04" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F03.png" alt="Updown Wall Light (F03)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">03 — Updown Wall Light</p>
+            <div class="fixtureMeta">Model: WL04</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+
+      <a class="fixtureCard" href="https://www.fraterlighting.com/ww03" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F04.png" alt="Wall Washers (F04)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">04 — Wall Washers</p>
+            <div class="fixtureMeta">Model: WW03</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+
+      <a class="fixtureCard" href="https://www.fraterlighting.com/fl01" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F05.png" alt="Food Light (F05)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">05 — Food Light</p>
+            <div class="fixtureMeta">Model: FL01</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+
+      <a class="fixtureCard" href="https://www.fraterlighting.com/nfsb" target="_blank" rel="noopener noreferrer">
+        <div class="fixtureThumb"><img src="F06.png" alt="Side Bend Neon Flex (F06)" /></div>
+        <div class="fixtureBody">
+          <div>
+            <p class="fixtureTitle">06 — Side Bend Neon Flex</p>
+            <div class="fixtureMeta">Model: NFSB</div>
+          </div>
+          <div class="chip">Open</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- =========================
+       PRINT-ONLY REPORT (2 pages)
+       ========================= -->
+
+  <!-- PAGE 1 -->
+  <div class="printOnly reportPage" id="reportPage1">
+    <div class="reportHeader">
+      <div>
+        <h1>Facade Light Proposal</h1>
+        <p class="small"><strong>Project:</strong> R Building by Times Development</p>
+      </div>
+      <div style="text-align:right">
+        <p class="small"><strong>FRATER</strong>
+Facade Lighting Design
+Dubai, UAE</p>
+      </div>
+    </div>
+
+    <div class="reportMetaGrid">
+      <div class="metaItem">
+        <p class="metaLabel">Selected Crown Light Effect</p>
+        <p class="metaValue" id="repCrownText">—</p>
+      </div>
+      <div class="metaItem">
+        <p class="metaLabel">Selected Wall Light Effect</p>
+        <p class="metaValue" id="repWallText">—</p>
+      </div>
+      <div class="metaItem">
+        <p class="metaLabel">Report Date</p>
+        <p class="metaValue" id="repDateText">—</p>
+      </div>
+      <div class="metaItem">
+        <p class="metaLabel">Prepared By</p>
+        <p class="metaValue">FRATER</p>
+      </div>
+    </div>
+
+    <div class="reportViewportBlock">
+      <div class="viewport">
+        <img class="layer" src="B01.png" alt="Background" />
+        <img class="layer" id="repCrownImg" alt="Crown Overlay" />
+        <img class="layer" id="repWallImg" alt="Wall Overlay" />
+      </div>
+      <div class="reportNote">
+        This page represents the selected facade lighting overlays applied to the base elevation image.
+      </div>
+    </div>
+
+    <div class="reportFooter">
+      <div>Confidential — For client review</div>
+      <div>Page 1 of 2</div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="printOnly reportPage" id="reportPage2">
+    <div class="reportHeader">
+      <div>
+        <h1>Proposed Fixtures</h1>
+        <p class="small"><strong>Project:</strong> R Building by Times Development</p>
+      </div>
+      <div style="text-align:right">
+        <p class="small"><strong>FRATER</strong>
+Facade Lighting Design
+Dubai, UAE</p>
+      </div>
+    </div>
+
+    <p class="reportSectionTitle">Product List</p>
+
+    <table class="productTable">
+      <thead>
+        <tr>
+          <th style="width:18mm;">#</th>
+          <th style="width:44mm;">Image</th>
+          <th>Fixture</th>
+          <th style="width:55mm;">Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-fit="F01">
+          <td><strong>01</strong></td>
+          <td><img class="prodImg" src="F01.png" alt="Neon Flex" /></td>
+          <td><strong>Neon Flex</strong><br/>Model: NFTB</td>
+          <td>fraterlighting.com/nftb</td>
+        </tr>
+        <tr data-fit="F02">
+          <td><strong>02</strong></td>
+          <td><img class="prodImg" src="F02.png" alt="Uplight" /></td>
+          <td><strong>Uplight</strong><br/>Model: IG04</td>
+          <td>fraterlighting.com/ig04</td>
+        </tr>
+        <tr data-fit="F03">
+          <td><strong>03</strong></td>
+          <td><img class="prodImg" src="F03.png" alt="Updown Wall Light" /></td>
+          <td><strong>Updown Wall Light</strong><br/>Model: WL04</td>
+          <td>fraterlighting.com/wl04</td>
+        </tr>
+        <tr data-fit="F04">
+          <td><strong>04</strong></td>
+          <td><img class="prodImg" src="F04.png" alt="Wall Washers" /></td>
+          <td><strong>Wall Washers</strong><br/>Model: WW03</td>
+          <td>fraterlighting.com/ww03</td>
+        </tr>
+        <tr data-fit="F05">
+          <td><strong>05</strong></td>
+          <td><img class="prodImg" src="F05.png" alt="Food Light" /></td>
+          <td><strong>Food Light</strong><br/>Model: FL01</td>
+          <td>fraterlighting.com/fl01</td>
+        </tr>
+        <tr data-fit="F06">
+          <td><strong>06</strong></td>
+          <td><img class="prodImg" src="F06.png" alt="Side Bend Neon Flex" /></td>
+          <td><strong>Side Bend Neon Flex</strong><br/>Model: NFSB</td>
+          <td>fraterlighting.com/nfsb</td>
+        </tr>
+
+        <!-- Optional placeholder if nothing selected -->
+        <tr id="noFixturesRow" style="display:none;">
+          <td colspan="4" style="text-align:center; color:#555;">
+            No fixtures required for the current selection.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="reportNote" style="margin-top:6mm;">
+      Notes: Final selection, wattage, optics, CCT, IP rating, and installation details to be confirmed during technical submittal.
+    </div>
+
+    <div class="reportFooter">
+      <div>Confidential — For client review</div>
+      <div>Page 2 of 2</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const crownImg = document.getElementById("crown");
+  const wallImg  = document.getElementById("wall");
+
+  const repCrownImg = document.getElementById("repCrownImg");
+  const repWallImg  = document.getElementById("repWallImg");
+  const repCrownText = document.getElementById("repCrownText");
+  const repWallText  = document.getElementById("repWallText");
+  const repDateText  = document.getElementById("repDateText");
+
+  function setLayer(layer, src){
+    const img = layer === "crown" ? crownImg : wallImg;
+    if(!src){
+      img.removeAttribute("src");
+      img.style.opacity = 0;
+      return;
+    }
+    img.src = src;
+    img.style.opacity = 1;
+  }
+
+  function activate(group, btn){
+    [...group.querySelectorAll(".opt")].forEach(b => b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+  }
+
+  function setup(groupId){
+    const group = document.getElementById(groupId);
+    group.addEventListener("click", e => {
+      const btn = e.target.closest(".opt");
+      if(!btn) return;
+      setLayer(btn.dataset.layer, btn.dataset.src);
+      activate(group, btn);
+    });
+    return group;
+  }
+
+  const crownGroup = setup("crownButtons");
+  const wallGroup  = setup("wallButtons");
+
+  document.getElementById("clearCrown").onclick = () => {
+    setLayer("crown","");
+    activate(crownGroup,null);
+  };
+
+  document.getElementById("clearWall").onclick = () => {
+    setLayer("wall","");
+    activate(wallGroup,null);
+  };
+
+  document.getElementById("resetAll").onclick = () => {
+    setLayer("crown","");
+    setLayer("wall","");
+    activate(crownGroup,null);
+    activate(wallGroup,null);
+  };
+
+  // ===== Fixture mapping (as per your requirement) =====
+  const crownFixtureMap = {
+    1: ["F01"],
+    2: ["F06", "F05"],
+    3: ["F01", "F05"]
+  };
+
+  const wallFixtureMap = {
+    1: ["F03"],
+    2: ["F04", "F06"],
+    3: ["F01"]
+  };
+
+  function getActiveOptionNumber(groupEl){
+    const active = groupEl.querySelector(".opt.active");
+    return active ? Number(active.dataset.option) : null;
+  }
+
+  function buildRequiredFittings(){
+    const crownOpt = getActiveOptionNumber(crownGroup);
+    const wallOpt  = getActiveOptionNumber(wallGroup);
+
+    const required = new Set();
+
+    if (crownOpt && crownFixtureMap[crownOpt]){
+      crownFixtureMap[crownOpt].forEach(f => required.add(f));
+    }
+    if (wallOpt && wallFixtureMap[wallOpt]){
+      wallFixtureMap[wallOpt].forEach(f => required.add(f));
+    }
+
+    return required;
+  }
+
+  function updateReportFixtureTable(requiredSet){
+    const tbody = document.querySelector("#reportPage2 .productTable tbody");
+    if(!tbody) return;
+
+    const rows = [...tbody.querySelectorAll("tr[data-fit]")];
+    const noRow = document.getElementById("noFixturesRow");
+
+    // Show/hide fixture rows
+    rows.forEach(row => {
+      const fit = row.dataset.fit;
+      row.style.display = requiredSet.has(fit) ? "" : "none";
+    });
+
+    // Renumber visible rows
+    let n = 1;
+    rows.forEach(row => {
+      if(row.style.display === "none") return;
+      const firstCell = row.querySelector("td");
+      if(firstCell){
+        firstCell.innerHTML = `<strong>${String(n).padStart(2,"0")}</strong>`;
+      }
+      n++;
+    });
+
+    // Placeholder row if none visible
+    const anyVisible = rows.some(r => r.style.display !== "none");
+    if(noRow){
+      noRow.style.display = anyVisible ? "none" : "";
+    }
+  }
+
+  // Export (Print -> Save as PDF)
+  document.getElementById("exportPdf").onclick = () => {
+    const crownSrc = crownImg.getAttribute("src") || "";
+    const wallSrc  = wallImg.getAttribute("src") || "";
+
+    if(crownSrc){
+      repCrownImg.src = crownSrc;
+      repCrownImg.style.opacity = 1;
+    }else{
+      repCrownImg.removeAttribute("src");
+      repCrownImg.style.opacity = 0;
+    }
+
+    if(wallSrc){
+      repWallImg.src = wallSrc;
+      repWallImg.style.opacity = 1;
+    }else{
+      repWallImg.removeAttribute("src");
+      repWallImg.style.opacity = 0;
+    }
+
+    repCrownText.textContent = crownSrc ? crownSrc.replace(".png","") : "—";
+    repWallText.textContent  = wallSrc ? wallSrc.replace(".png","") : "—";
+
+    const d = new Date();
+    const opts = { year:'numeric', month:'short', day:'2-digit' };
+    repDateText.textContent = d.toLocaleDateString(undefined, opts);
+
+    // ✅ Filter fixtures for print page 2 based on selected options
+    const required = buildRequiredFittings();
+    updateReportFixtureTable(required);
+
+    window.print();
+  };
+
+  // initial hidden overlays
+  setLayer("crown","");
+  setLayer("wall","");
+</script>
+
+</body>
+</html>
